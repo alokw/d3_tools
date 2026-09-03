@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls /c/Python*/python.exe /c/Users/*/AppData/Local/Programs/Python/*/python.exe)",
+      "Bash(where python:*)",
+      "Bash(py --version)",
+      "Bash(py -c ':*)",
+      "Bash(where py:*)",
+      "Bash(ls /c/Python*/python.exe)",
+      "Read(//c/Users/**)",
+      "Bash(/c/Python/Python311/python.exe)",
+      "Bash(chcp 65001)",
+      "Bash(/c/Python/Python311/python.exe -u)",
+      "Bash(/c/Python/Python311/python.exe -X utf8 -u)"
+    ]
+  }
+}

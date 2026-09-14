@@ -229,6 +229,20 @@ def main() -> int:
 
     print(f"Wrote {len(rows)} row(s) to: {out}")
     print(f"  {cue_rows} cue(s), {media_rows} media row(s) across {total_layers} layer(s).")
+
+    # Cue records present but none placed means the cue table wasn't located —
+    # a parsing gap, not an empty show. Say so rather than quietly omitting them.
+    cue_records = sum(
+        1 for record in d3.read_records(data) if record.path.startswith("internal/cue/")
+    )
+    if cue_records and not cue_rows:
+        print(
+            f"Warning: {cue_records} cue record(s) exist but the cue table could not be "
+            "located; no cues or section breaks were written.",
+            file=sys.stderr,
+        )
+        return 1
+
     return 0
 
 

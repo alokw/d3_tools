@@ -103,7 +103,9 @@ The essentials:
 - **Media chain** — VideoClip → VideoAsset → VideoFragment → VideoFile, mixing
   external records and embedded objects. Same pattern for Audio\*.
 - **Cue table** — `[u32 count] [f64 beat, string\0 cue_path] * count`. Cue beat
-  positions are stored **only** here, never in the cue records themselves.
+  positions are stored **only** here, never in the cue records themselves. Layers
+  can reference cues too (a TrackJumpModule's target), so the table is located by
+  finding the candidate whose entries end exactly at the end of the track.
 - **Cue records** — at `internal/cue/uid_*.apx`: note text, section break flag,
   transition type, transition time. A note of `"/"` is a divider by convention,
   which is independent of the section break flag.

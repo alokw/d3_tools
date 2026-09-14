@@ -168,6 +168,8 @@ repeated for each cue:
 
 The cue table stores timeline positions alongside cue paths — this is the only place cue timing appears (not in the individual cue records themselves).
 
+**Locating the table:** do not assume the first `internal/cue` string in the track is the table. Layers can reference cues too — a `TrackJumpModule` layer stores its jump target as a `ResourceSequence` key pointing at `internal/cue/uid_….apx`, and that reference sits in the layer data long before the tail. The reliable test is that the table's entries run out **exactly at the end of the track content**; `d3export.parse_cue_table` tries each `internal/cue` candidate in turn and accepts the first one that satisfies this.
+
 ---
 
 ## Layer Records
@@ -203,6 +205,8 @@ Embedded within the Track blob. Each layer uses the embedded object format (no t
 | FadeModule              | 4     |
 | ScreenPositionModule    | 1     |
 | ProjectionAwareModule   | 1     |
+
+A later export from the same show (Sep 2026, 271 layers, 205 cues) also contained **`TrackJumpModule`** layers. These reference a cue as their jump target via a `ResourceSequence` key — the only known case of a layer referencing a cue, and the reason the cue table can't be located by a naive first-match search (see the Track Object section).
 
 Layers with media content use ColourShift modules that contain ResourceSequence objects referencing VideoClip paths.
 

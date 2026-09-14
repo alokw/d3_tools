@@ -113,31 +113,48 @@ def parse_cue_table(data: bytes, track: Record):
 
     This is the only place cue beat positions are stored; the individual cue
     records carry the note and flags but no timing.
-    """
-    first = data.find(b"internal/cue", track.start, track.end)
-    if first < 0:
-        return []
 
+    Layers can also reference cues (e.g. a TrackJumpModule's jump target), so
+    the first `internal/cue` string in the track is not necessarily the table.
+    Each candidate is parsed and accepted only if its entries run out exactly
+    at the end of the track content, which is where the table always sits.
+    """
+    search_from = track.start
+    while True:
+        hit = data.find(b"internal/cue", search_from, track.end)
+        if hit < 0:
+            return []
+        search_from = hit + 1
+
+        entries = _parse_cue_table_at(data, hit, track)
+        if entries is not None:
+            return entries
+
+
+def _parse_cue_table_at(data: bytes, first_path: int, track: Record):
+    """Try to read a cue table whose first entry path starts at `first_path`."""
     # The count sits immediately before the first entry's f64 beat.
-    pos = first - 8 - 4
+    pos = first_path - 8 - 4
     if pos < track.start:
-        return []
+        return None
 
     (count,) = struct.unpack_from("<I", data, pos)
     pos += 4
     if count <= 0 or count > 100000:
-        return []
+        return None
 
     entries = []
     for _ in range(count):
         if pos + 8 > track.end:
-            break
+            return None
         (beat,) = struct.unpack_from("<d", data, pos)
         pos += 8
         path, pos = read_cstring(data, pos)
+        if not path.startswith("internal/cue/"):
+            return None
         entries.append((beat, path))
 
-    return entries
+    return entries if pos == track.end else None
 
 
 def parse_cue_record(data: bytes, record: Record):
@@ -357,3 +374,15 @@ def default_output_path(script_file: str, source, suffix: str) -> Path:
     output_dir = Path(script_file).parent / "output"
     output_dir.mkdir(exist_ok=True)
     return output_dir / (Path(source).stem + suffix)
+
+
+if __name__ == "__main__":
+    import sys
+
+    print(
+        "d3export.py is a library, not a tool. Run one of these instead:\n"
+        "    python d3_timeline_report.py <track.d3export>\n"
+        "    python d3_cue_export.py <track.d3export>",
+        file=sys.stderr,
+    )
+    raise SystemExit(2)
